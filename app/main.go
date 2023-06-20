@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"gopkg.in/yaml.v3"
+	"os/exec"
 )
 
 
@@ -33,14 +34,25 @@ func main() {
         log.Fatal(err)
     }
 
-    fmt.Printf(opts.Config)
+    //fmt.Printf(opts.Config)
 
     listener, errYaml := LoadConfig(opts.Config)
     if errYaml != nil {
         log.Println(errYaml)
     }
 
-    fmt.Println(listener)
+    for _, container := range listener.Containers {
+        out, err := exec.Command("docker", "logs", string(container.Name)).Output()
+
+        if err != nil {
+            log.Fatal(err)
+        }
+
+        fmt.Println(string(out))
+
+        fmt.Println(container.Name)
+    }
+    //fmt.Println(listener)
 }
 
 func LoadConfig(file string) (*Listener, error) {
