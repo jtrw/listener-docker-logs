@@ -7,6 +7,7 @@ import (
 	"os"
 	"gopkg.in/yaml.v3"
 	"os/exec"
+	"regexp"
 )
 
 
@@ -42,13 +43,21 @@ func main() {
     }
 
     for _, container := range listener.Containers {
-        out, err := exec.Command("docker", "logs", string(container.Name)).Output()
+        cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "10")
+
+        output, err := cmd.CombinedOutput()
 
         if err != nil {
             log.Fatal(err)
         }
+        outStr := string(output)
 
-        fmt.Println(string(out))
+        matched := regexp.MustCompile(container.Regexp)
+        fmt.Println(matched.FindStringIndex(string(outStr)))
+
+        //fmt.Println(string(output))
+
+        //fmt.Println(string(out))
 
         fmt.Println(container.Name)
     }
