@@ -43,7 +43,7 @@ func main() {
     }
 
     for _, container := range listener.Containers {
-        cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "10")
+        cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "20")
 
         output, err := cmd.CombinedOutput()
 
@@ -53,7 +53,12 @@ func main() {
         outStr := string(output)
 
         matched := regexp.MustCompile(container.Regexp)
-        fmt.Println(matched.FindStringIndex(string(outStr)))
+        matches := matched.FindAllStringSubmatch(outStr, -1)
+        //fmt.Println(matches)
+        for _, v := range matches {
+            fmt.Println(v[1])
+        }
+        fmt.Println(matched.FindStringIndex(outStr))
 
         //fmt.Println(string(output))
 
