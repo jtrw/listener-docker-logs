@@ -16,7 +16,7 @@ var revision string = "1.0"
 type Listener struct {
     Containers []struct {
         Name string `yaml:"name"`
-        Regexp string `yaml:"regexp"`
+        Regexp []string `yaml:"regexp"`
         Label string `yaml:"label"`
     } `yaml:"containers"`
 }
@@ -43,7 +43,7 @@ func main() {
     }
 
     for _, container := range listener.Containers {
-        cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "20")
+        cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
 
         output, err := cmd.CombinedOutput()
 
@@ -52,17 +52,17 @@ func main() {
         }
         outStr := string(output)
 
-        matched := regexp.MustCompile(container.Regexp)
-        matches := matched.FindAllStringSubmatch(outStr, -1)
-        //fmt.Println(matches)
-        for _, v := range matches {
-            fmt.Println(v[1])
+        for _, regExpStr := range container.Regexp {
+            matched := regexp.MustCompile(regExpStr)
+            matches := matched.FindAllStringSubmatch(outStr, -1)
+            matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
+            //fmt.Println(matches)
+            for _, v := range matches {
+                fmt.Println(v[1])
+            }
+            fmt.Println(matchesIndexes)
         }
-        fmt.Println(matched.FindStringIndex(outStr))
 
-        //fmt.Println(string(output))
-
-        //fmt.Println(string(out))
 
         fmt.Println(container.Name)
     }
