@@ -25,6 +25,15 @@ type Options struct {
 	Config string  `short:"f" long:"file" env:"CONF" default:"listener.yml" description:"config file"`
 }
 
+type FondMessages struct {
+    Container []ContainerMessages
+}
+
+type ContainerMessages struct {
+    Name string
+    Messages []string
+}
+
 func main() {
 	fmt.Printf("Listener %s\n", revision)
 
@@ -41,8 +50,11 @@ func main() {
     if errYaml != nil {
         log.Println(errYaml)
     }
+    //var findMessages FondMessages
 
     for _, container := range listener.Containers {
+        var containerMessages ContainerMessages;
+        containerMessages.Name = string(container.Name)
         cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
 
         output, err := cmd.CombinedOutput()
@@ -58,15 +70,18 @@ func main() {
             matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
             //fmt.Println(matches)
             for _, v := range matches {
+                containerMessages.Messages = append(containerMessages.Messages, v[1])
                 fmt.Println(v[1])
             }
             fmt.Println(matchesIndexes)
         }
 
+        fmt.Println(containerMessages)
+       // findMessages = append(findMessages, containerMessages)
 
         fmt.Println(container.Name)
     }
-    //fmt.Println(listener)
+   // fmt.Println(findMessages)
 }
 
 func LoadConfig(file string) (*Listener, error) {
