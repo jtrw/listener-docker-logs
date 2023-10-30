@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os/exec"
 	"regexp"
+	"time"
 )
 
 
@@ -55,7 +56,10 @@ func main() {
     for _, container := range listener.Containers {
         var containerMessages ContainerMessages;
         containerMessages.Name = string(container.Name)
-        cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
+       // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
+        //time like this 2013-01-02T13:23:37Z
+        time := time.Now().Add(-time.Minute * 5).Format("2006-01-02T15:04:05Z")
+        cmd := exec.Command("docker", "logs", string(container.Name), "--since", time)
 
         output, err := cmd.CombinedOutput()
 
