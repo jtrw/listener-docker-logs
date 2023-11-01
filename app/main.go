@@ -50,34 +50,38 @@ func main() {
         log.Println(errYaml)
     }
 
-    for _, container := range listener.Containers {
-        var containerMessages ContainerMessages;
-        containerMessages.Name = string(container.Name)
-       // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
-        time := time.Now().Add(-time.Minute * 5).Format("2006-01-02T15:04:05Z")
-        cmd := exec.Command("docker", "logs", string(container.Name), "--since", time)
+    for {
+        for _, container := range listener.Containers {
+            var containerMessages ContainerMessages;
+            containerMessages.Name = string(container.Name)
+           // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
+            time := time.Now().Add(-time.Minute * 1).Format("2006-01-02T15:04:05")
+            fmt.Println(time)
+            cmd := exec.Command("docker", "logs", string(container.Name), "--since", time)
 
-        output, err := cmd.CombinedOutput()
+            output, err := cmd.CombinedOutput()
 
-        if err != nil {
-            log.Fatal(err)
-        }
-        outStr := string(output)
-
-        for _, regExpStr := range container.Regexp {
-            matched := regexp.MustCompile(regExpStr)
-            matches := matched.FindAllStringSubmatch(outStr, -1)
-            matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
-
-            for _, v := range matches {
-                containerMessages.Messages = append(containerMessages.Messages, v[1])
-                fmt.Println(v[1])
+            if err != nil {
+                log.Fatal(err)
             }
-            fmt.Println(matchesIndexes)
-        }
+            outStr := string(output)
 
-        fmt.Println(containerMessages)
-        fmt.Println(container.Name)
+            for _, regExpStr := range container.Regexp {
+                matched := regexp.MustCompile(regExpStr)
+                matches := matched.FindAllStringSubmatch(outStr, -1)
+                matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
+
+                for _, v := range matches {
+                    containerMessages.Messages = append(containerMessages.Messages, v[1])
+                    fmt.Println(v[1])
+                }
+                fmt.Println(matchesIndexes)
+            }
+
+            fmt.Println(containerMessages)
+            fmt.Println(container.Name)
+        }
+        time.Sleep(60 * time.Second)
     }
 }
 
