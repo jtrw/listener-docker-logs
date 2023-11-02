@@ -55,7 +55,7 @@ func main() {
             var containerMessages ContainerMessages;
             containerMessages.Name = string(container.Name)
            // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
-            time := time.Now().Add(-time.Minute * 1).Format("2006-01-02T15:04:05")
+            time := time.Now().Add(-time.Second * 10).Format("2006-01-02T15:04:05")
             fmt.Println(time)
             cmd := exec.Command("docker", "logs", string(container.Name), "--since", time)
 
@@ -81,7 +81,7 @@ func main() {
             fmt.Println(containerMessages)
             fmt.Println(container.Name)
         }
-        time.Sleep(60 * time.Second)
+        time.Sleep(10 * time.Second)
     }
 }
 
