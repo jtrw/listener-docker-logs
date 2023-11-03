@@ -24,6 +24,7 @@ type Listener struct {
 
 type Options struct {
 	Config string  `short:"f" long:"file" env:"CONF" default:"listener.yml" description:"config file"`
+	Port string `short:"p" long:"port" env:"PORT" default:"2323" description:"port"`
 }
 
 type FondMessages struct {
@@ -33,6 +34,10 @@ type FondMessages struct {
 type ContainerMessages struct {
     Name string
     Messages []string
+}
+
+type TcpServer struct {
+    Port int
 }
 
 func main() {
