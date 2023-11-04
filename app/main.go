@@ -9,6 +9,10 @@ import (
 	"os/exec"
 	"regexp"
 	"time"
+	"net"
+	"bytes"
+	"encoding/gob"
+	"strings"
 )
 
 
@@ -40,6 +44,11 @@ type TcpServer struct {
     Port int
 }
 
+type Message struct {
+	Uuid   string
+	Data string
+}
+
 func main() {
 	fmt.Printf("Listener %s\n", revision)
 
@@ -55,8 +64,42 @@ func main() {
         log.Println(errYaml)
     }
 
+    port := ":" + opts.Port
+    l, err := net.Listen("tcp", port)
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    defer l.Close()
+
+    c, err := l.Accept()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+
     for {
+        tmp := make([]byte, 500)
+        c.Read(tmp)
+        tmpbuff := bytes.NewBuffer(tmp)
+        tmpstruct := new(Message)
+        // creates a decoder object
+        gobobjdec := gob.NewDecoder(tmpbuff)
+        // decodes buffer and unmarshals it into a Message struct
+        gobobjdec.Decode(tmpstruct)
+        fmt.Println(tmpstruct.Data)
+        if err != nil {
+            fmt.Println(err)
+            return
+        }
+        if strings.TrimSpace(string(tmpstruct.Data)) == "STOP" {
+            fmt.Println("Exiting TCP server!")
+            return
+        }
+
+
         for _, container := range listener.Containers {
+            fmt.Println(container.Name)
             var containerMessages ContainerMessages;
             containerMessages.Name = string(container.Name)
            // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
@@ -82,9 +125,15 @@ func main() {
                 }
                 fmt.Println(matchesIndexes)
             }
-
+            // convert containerMessages to bites
+            binBuf := new(bytes.Buffer)
+            gobobj := gob.NewEncoder(binBuf)
+            gobobj.Encode(containerMessages)
+            //c.Write(binBuf.Bytes())
+            c.Write([]byte("test"))
+            fmt.Println("Send to Client");
             fmt.Println(containerMessages)
-            fmt.Println(container.Name)
+            //fmt.Println(container.Name)
         }
         time.Sleep(10 * time.Second)
     }

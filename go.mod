@@ -3,6 +3,7 @@ module github.com/jtrw/listener-docker-logs/v1
 go 1.17
 
 require (
+	github.com/google/uuid v1.4.0
 	github.com/jessevdk/go-flags v1.5.0
 	gopkg.in/yaml.v3 v3.0.1
 )
