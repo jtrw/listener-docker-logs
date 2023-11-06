@@ -130,12 +130,15 @@ func main() {
             gobobj := gob.NewEncoder(binBuf)
             gobobj.Encode(containerMessages)
             //c.Write(binBuf.Bytes())
-            c.Write([]byte("test"))
+           // c.Write([]byte("ping\n"))
             fmt.Println("Send to Client");
             fmt.Println(containerMessages)
+            // send binBuf.Bytes() and add to end \n
+            c.Write(append(binBuf.Bytes(), '\n'))
+            //c.Write(binBuf.Bytes())
             //fmt.Println(container.Name)
         }
-        time.Sleep(10 * time.Second)
+        //time.Sleep(10 * time.Second)
     }
 }
 
