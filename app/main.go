@@ -99,11 +99,10 @@ func main() {
 
 
         for _, container := range listener.Containers {
-            fmt.Println(container.Name)
             var containerMessages ContainerMessages;
             containerMessages.Name = string(container.Name)
            // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
-            time := time.Now().Add(-time.Second * 10).Format("2006-01-02T15:04:05")
+            time := time.Now().Add(-time.Second * 1).Format("2006-01-02T15:04:05")
             fmt.Println(time)
             cmd := exec.Command("docker", "logs", string(container.Name), "--since", time)
 
@@ -117,26 +116,22 @@ func main() {
             for _, regExpStr := range container.Regexp {
                 matched := regexp.MustCompile(regExpStr)
                 matches := matched.FindAllStringSubmatch(outStr, -1)
-                matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
+                //matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
 
                 for _, v := range matches {
                     containerMessages.Messages = append(containerMessages.Messages, v[1])
-                    fmt.Println(v[1])
                 }
-                fmt.Println(matchesIndexes)
             }
-            // convert containerMessages to bites
-            binBuf := new(bytes.Buffer)
-            gobobj := gob.NewEncoder(binBuf)
-            gobobj.Encode(containerMessages)
-            //c.Write(binBuf.Bytes())
-           // c.Write([]byte("ping\n"))
-            fmt.Println("Send to Client");
-            fmt.Println(containerMessages)
-            // send binBuf.Bytes() and add to end \n
-            c.Write(append(binBuf.Bytes(), '\n'))
-            //c.Write(binBuf.Bytes())
-            //fmt.Println(container.Name)
+            if len(containerMessages.Messages) > 0 {
+                binBuf := new(bytes.Buffer)
+                gobobj := gob.NewEncoder(binBuf)
+                gobobj.Encode(containerMessages)
+                fmt.Println("Send to Client");
+                fmt.Println(containerMessages)
+                c.Write(append(binBuf.Bytes(), '\n'))
+            } else {
+                c.Write([]byte("PING\n"))
+            }
         }
         //time.Sleep(10 * time.Second)
     }
