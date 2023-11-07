@@ -9,11 +9,17 @@ import (
     "encoding/gob"
     "bytes"
     "github.com/google/uuid"
+    "time"
 )
 
 type Message struct {
 	Uuid   string
 	Data string
+}
+
+type ContainerMessages struct {
+    Name string
+    Messages []string
 }
 
 func main() {
@@ -31,9 +37,6 @@ func main() {
     }
 
     for {
-        //reader := bufio.NewReader(os.Stdin)
-        //fmt.Print(">> ")
-        //text, _ := reader.ReadString('\n')
         text := "check"
         msg := Message{Uuid: uuid.New().String(), Data: text}
 
@@ -44,10 +47,24 @@ func main() {
         c.Write(binBuf.Bytes())
 
         message, _ := bufio.NewReader(c).ReadString('\n')
-        fmt.Print("->: " + message)
-        if strings.TrimSpace(string(text)) == "STOP" {
-            fmt.Println("TCP client exiting...")
+        if strings.TrimSpace(string(message)) == "STOP" {
+            fmt.Println("TCP server exiting...")
             return
         }
+
+        if strings.TrimSpace(string(message)) == "PING" {
+            continue
+        }
+
+        //ContainerMessages in message
+        var containerMessages ContainerMessages;
+        binBuf = bytes.NewBuffer([]byte(message))
+        gobobjdec := gob.NewDecoder(binBuf)
+        gobobjdec.Decode(&containerMessages)
+        fmt.Println(message)
+        fmt.Println(containerMessages.Name)
+        fmt.Println(containerMessages.Messages)
+
+        time.Sleep(1 * time.Second)
     }
 }
