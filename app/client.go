@@ -1,11 +1,11 @@
 package main
 
 import (
-    "bufio"
+    //"bufio"
     "fmt"
     "net"
     "os"
-    "strings"
+    //"strings"
     "encoding/gob"
     "bytes"
     "github.com/google/uuid"
@@ -46,24 +46,37 @@ func main() {
 
         c.Write(binBuf.Bytes())
 
-        message, _ := bufio.NewReader(c).ReadString('\n')
-        if strings.TrimSpace(string(message)) == "STOP" {
-            fmt.Println("TCP server exiting...")
-            return
+         tmp := make([]byte, 500)
+        c.Read(tmp)
+
+        tmpbuff := bytes.NewBuffer(tmp)
+        tmpstruct := new(ContainerMessages)
+        // creates a decoder object
+        gobobjdec := gob.NewDecoder(tmpbuff)
+        // decodes buffer and unmarshals it into a Message struct
+        gobobjdec.Decode(tmpstruct)
+        for _, message := range tmpstruct.Messages {
+            fmt.Println(message)
         }
 
-        if strings.TrimSpace(string(message)) == "PING" {
-            continue
-        }
+//         message, _ := bufio.NewReader(c).ReadString('\n')
+//         if strings.TrimSpace(string(message)) == "STOP" {
+//             fmt.Println("TCP server exiting...")
+//             return
+//         }
+//
+//         if strings.TrimSpace(string(message)) == "PING" {
+//             continue
+//         }
 
         //ContainerMessages in message
-        var containerMessages ContainerMessages;
-        binBuf = bytes.NewBuffer([]byte(message))
-        gobobjdec := gob.NewDecoder(binBuf)
-        gobobjdec.Decode(&containerMessages)
-        fmt.Println(message)
-        fmt.Println(containerMessages.Name)
-        fmt.Println(containerMessages.Messages)
+        //var containerMessages ContainerMessages;
+        //binBuf = bytes.NewBuffer([]byte(message))
+        //gobobjdec := gob.NewDecoder(binBuf)
+        //gobobjdec.Decode(&containerMessages)
+       // fmt.Println(tmpstruct)
+        //fmt.Println(containerMessages.Name)
+        //fmt.Println(containerMessages.Messages)
 
         time.Sleep(1 * time.Second)
     }

@@ -128,7 +128,7 @@ func main() {
                 gobobj.Encode(containerMessages)
                 fmt.Println("Send to Client");
                 fmt.Println(containerMessages)
-                c.Write(append(binBuf.Bytes(), '\n'))
+                c.Write(append(binBuf.Bytes()))
             } else {
                 c.Write([]byte("PING\n"))
             }
