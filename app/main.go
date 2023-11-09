@@ -46,7 +46,7 @@ type TcpServer struct {
 
 type Message struct {
 	Uuid   string
-	Data string
+	Data []byte
 }
 
 func main() {
@@ -87,7 +87,7 @@ func main() {
         gobobjdec := gob.NewDecoder(tmpbuff)
         // decodes buffer and unmarshals it into a Message struct
         gobobjdec.Decode(tmpstruct)
-        fmt.Println(tmpstruct.Data)
+
         if err != nil {
             fmt.Println(err)
             return
@@ -96,7 +96,6 @@ func main() {
             fmt.Println("Exiting TCP server!")
             return
         }
-
 
         for _, container := range listener.Containers {
             var containerMessages ContainerMessages;
@@ -123,14 +122,24 @@ func main() {
                 }
             }
             if len(containerMessages.Messages) > 0 {
+               binBuf := new(bytes.Buffer)
+               gobobj := gob.NewEncoder(binBuf)
+               gobobj.Encode(containerMessages)
+               msg := Message{Uuid: "1", Data: binBuf.Bytes()}
+               //convert msg to bytes
+               binBuf = new(bytes.Buffer)
+               gobobj = gob.NewEncoder(binBuf)
+               gobobj.Encode(msg)
+               c.Write(binBuf.Bytes())
+
+
+               //c.Write(append(binBuf.Bytes()))
+            } else {
+                msg := Message{Uuid: "1", Data: []byte("PING\n")}
                 binBuf := new(bytes.Buffer)
                 gobobj := gob.NewEncoder(binBuf)
-                gobobj.Encode(containerMessages)
-                fmt.Println("Send to Client");
-                fmt.Println(containerMessages)
-                c.Write(append(binBuf.Bytes()))
-            } else {
-                c.Write([]byte("PING\n"))
+                gobobj.Encode(msg)
+                c.Write(binBuf.Bytes())
             }
         }
         //time.Sleep(10 * time.Second)
