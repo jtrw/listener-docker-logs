@@ -14,7 +14,7 @@ import (
 
 type Message struct {
 	Uuid   string
-	Data string
+	Data []byte
 }
 
 type ContainerMessages struct {
@@ -38,7 +38,7 @@ func main() {
 
     for {
         text := "check"
-        msg := Message{Uuid: uuid.New().String(), Data: text}
+        msg := Message{Uuid: uuid.New().String(), Data: []byte(text)}
 
         binBuf := new(bytes.Buffer)
         gobobj := gob.NewEncoder(binBuf)
@@ -50,14 +50,15 @@ func main() {
         c.Read(tmp)
 
         tmpbuff := bytes.NewBuffer(tmp)
-        tmpstruct := new(ContainerMessages)
+        tmpstruct := new(Message)
         // creates a decoder object
         gobobjdec := gob.NewDecoder(tmpbuff)
         // decodes buffer and unmarshals it into a Message struct
         gobobjdec.Decode(tmpstruct)
-        for _, message := range tmpstruct.Messages {
-            fmt.Println(message)
-        }
+        fmt.Println(tmpstruct.Data)
+//         for _, message := range tmpstruct.Messages {
+//             fmt.Println(message)
+//         }
 
 //         message, _ := bufio.NewReader(c).ReadString('\n')
 //         if strings.TrimSpace(string(message)) == "STOP" {
