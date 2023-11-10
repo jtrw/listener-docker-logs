@@ -12,14 +12,15 @@ import (
     "time"
 )
 
-type Message struct {
-	Uuid   string
-	Data []byte
-}
-
 type ContainerMessages struct {
     Name string
     Messages []string
+}
+
+type Message struct {
+	Uuid   string
+	Data ContainerMessages
+	Message string
 }
 
 func main() {
@@ -37,8 +38,7 @@ func main() {
     }
 
     for {
-        text := "check"
-        msg := Message{Uuid: uuid.New().String(), Data: []byte(text)}
+        msg := Message{Uuid: uuid.New().String(), Message: "PING"}
 
         binBuf := new(bytes.Buffer)
         gobobj := gob.NewEncoder(binBuf)
@@ -55,6 +55,7 @@ func main() {
         gobobjdec := gob.NewDecoder(tmpbuff)
         // decodes buffer and unmarshals it into a Message struct
         gobobjdec.Decode(tmpstruct)
+
         fmt.Println(tmpstruct.Data)
 //         for _, message := range tmpstruct.Messages {
 //             fmt.Println(message)
