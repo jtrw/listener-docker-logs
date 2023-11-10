@@ -46,7 +46,8 @@ type TcpServer struct {
 
 type Message struct {
 	Uuid   string
-	Data []byte
+	Data ContainerMessages
+	Message string
 }
 
 func main() {
@@ -92,7 +93,7 @@ func main() {
             fmt.Println(err)
             return
         }
-        if strings.TrimSpace(string(tmpstruct.Data)) == "STOP" {
+        if strings.TrimSpace(string(tmpstruct.Message)) == "STOP" {
             fmt.Println("Exiting TCP server!")
             return
         }
@@ -122,20 +123,17 @@ func main() {
                 }
             }
             if len(containerMessages.Messages) > 0 {
-               binBuf := new(bytes.Buffer)
-               gobobj := gob.NewEncoder(binBuf)
-               gobobj.Encode(containerMessages)
-               msg := Message{Uuid: "1", Data: binBuf.Bytes()}
-               //convert msg to bytes
-               binBuf = new(bytes.Buffer)
-               gobobj = gob.NewEncoder(binBuf)
-               gobobj.Encode(msg)
-               c.Write(binBuf.Bytes())
+                msg  := Message{Uuid: "1", Data: containerMessages}
+                binBuf := new(bytes.Buffer)
+                gobobj := gob.NewEncoder(binBuf)
+                gobobj.Encode(msg)
+
+                c.Write(binBuf.Bytes())
 
 
-               //c.Write(append(binBuf.Bytes()))
+                //c.Write(append(binBuf.Bytes()))
             } else {
-                msg := Message{Uuid: "1", Data: []byte("PING\n")}
+                msg := Message{Uuid: "1", Message: "PONG"}
                 binBuf := new(bytes.Buffer)
                 gobobj := gob.NewEncoder(binBuf)
                 gobobj.Encode(msg)
