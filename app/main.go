@@ -129,9 +129,6 @@ func main() {
                 gobobj.Encode(msg)
 
                 c.Write(binBuf.Bytes())
-
-
-                //c.Write(append(binBuf.Bytes()))
             } else {
                 msg := Message{Uuid: "1", Message: "PONG"}
                 binBuf := new(bytes.Buffer)
