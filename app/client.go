@@ -57,28 +57,6 @@ func main() {
         gobobjdec.Decode(tmpstruct)
 
         fmt.Println(tmpstruct.Data)
-//         for _, message := range tmpstruct.Messages {
-//             fmt.Println(message)
-//         }
-
-//         message, _ := bufio.NewReader(c).ReadString('\n')
-//         if strings.TrimSpace(string(message)) == "STOP" {
-//             fmt.Println("TCP server exiting...")
-//             return
-//         }
-//
-//         if strings.TrimSpace(string(message)) == "PING" {
-//             continue
-//         }
-
-        //ContainerMessages in message
-        //var containerMessages ContainerMessages;
-        //binBuf = bytes.NewBuffer([]byte(message))
-        //gobobjdec := gob.NewDecoder(binBuf)
-        //gobobjdec.Decode(&containerMessages)
-       // fmt.Println(tmpstruct)
-        //fmt.Println(containerMessages.Name)
-        //fmt.Println(containerMessages.Messages)
 
         time.Sleep(1 * time.Second)
     }
