@@ -46,7 +46,7 @@ func main() {
 
         c.Write(binBuf.Bytes())
 
-         tmp := make([]byte, 500)
+        tmp := make([]byte, 500)
         c.Read(tmp)
 
         tmpbuff := bytes.NewBuffer(tmp)
@@ -58,6 +58,6 @@ func main() {
 
         fmt.Println(tmpstruct.Data)
 
-        time.Sleep(1 * time.Second)
+        time.Sleep(2 * time.Second)
     }
 }
