@@ -79,6 +79,8 @@ func main() {
         return
     }
 
+    tmpTime := time.Now().Add(-time.Second * 10).Format("2006-01-02T15:04:05")
+
     for {
         tmp := make([]byte, 500)
         c.Read(tmp)
@@ -102,10 +104,10 @@ func main() {
             var containerMessages ContainerMessages;
             containerMessages.Name = string(container.Name)
            // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
-            time := time.Now().Add(-time.Second * 1).Format("2006-01-02T15:04:05")
-            fmt.Println(time)
-            cmd := exec.Command("docker", "logs", string(container.Name), "--since", time)
+            //time := time.Now().Add(-time.Second * 1).Format("2006-01-02T15:04:05")
 
+            cmd := exec.Command("docker", "logs", string(container.Name), "--since", tmpTime)
+            tmpTime = time.Now().Format("2006-01-02T15:04:05")
             output, err := cmd.CombinedOutput()
 
             if err != nil {
