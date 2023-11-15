@@ -56,8 +56,11 @@ func main() {
         // decodes buffer and unmarshals it into a Message struct
         gobobjdec.Decode(tmpstruct)
 
-        fmt.Println(tmpstruct.Data)
+        //count tmpstruct.Data
+        if len(tmpstruct.Data.Messages) > 0 {
+            fmt.Println(tmpstruct.Data)
+        }
 
-        time.Sleep(2 * time.Second)
+        time.Sleep(1 * time.Second)
     }
 }
