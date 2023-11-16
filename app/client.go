@@ -46,7 +46,7 @@ func main() {
 
         c.Write(binBuf.Bytes())
 
-        tmp := make([]byte, 500)
+        tmp := make([]byte, 10000) // 10000 bytes
         c.Read(tmp)
 
         tmpbuff := bytes.NewBuffer(tmp)
