@@ -23,6 +23,7 @@ type Listener struct {
         Name string `yaml:"name"`
         Regexp []string `yaml:"regexp"`
         Label string `yaml:"label"`
+        All bool `yaml:"all"`
     } `yaml:"containers"`
 }
 
@@ -114,14 +115,17 @@ func main() {
                 log.Fatal(err)
             }
             outStr := string(output)
+            if container.All {
+                containerMessages.Messages = append(containerMessages.Messages, outStr)
+            } else {
+                for _, regExpStr := range container.Regexp {
+                    matched := regexp.MustCompile(regExpStr)
+                    matches := matched.FindAllStringSubmatch(outStr, -1)
+                    //matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
 
-            for _, regExpStr := range container.Regexp {
-                matched := regexp.MustCompile(regExpStr)
-                matches := matched.FindAllStringSubmatch(outStr, -1)
-                //matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
-
-                for _, v := range matches {
-                    containerMessages.Messages = append(containerMessages.Messages, v[1])
+                    for _, v := range matches {
+                        containerMessages.Messages = append(containerMessages.Messages, v[1])
+                    }
                 }
             }
             if len(containerMessages.Messages) > 0 {
@@ -129,7 +133,8 @@ func main() {
                 binBuf := new(bytes.Buffer)
                 gobobj := gob.NewEncoder(binBuf)
                 gobobj.Encode(msg)
-
+                length := fmt.Sprintf("%08d", len(binBuf.Bytes()))
+                fmt.Println(length)
                 c.Write(binBuf.Bytes())
             } else {
                 msg := Message{Uuid: "1", Message: "PONG"}

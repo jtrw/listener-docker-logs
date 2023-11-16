@@ -2,3 +2,6 @@ containers:
   - name: test
     regexp: "[CRITICAL]"
     label: "CRITICAL"
+  - name: test2
+    all: true
+    label: "ALL TEST2"
