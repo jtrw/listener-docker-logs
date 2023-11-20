@@ -26,7 +26,7 @@ func main() {
 		fmt.Printf("Server failed to start - %s\n", err)
 		return
 	}
-
+    c := make(chan []byte)
 	// start the server
 	go func() {
 		for {
@@ -37,7 +37,7 @@ func main() {
 			}
 
 			// handle the connection (read the data)
-			go handleConnection(conn)
+			go handleConnection(conn, c)
 		}
 	}()
 
@@ -68,14 +68,17 @@ func main() {
 	fmt.Printf("WROTE %d bytes\n", length)
 
 	// wait for the connection handler to finish
-	<-done
+	//<-done
+
+	dataChanel := <-c
+	fmt.Println(string(dataChanel))
 
 	// log it all
 	fmt.Printf("CLIENT MD5 - %x\n", clientMD5)
 	fmt.Printf("SERVER MD5 - %x\n", serverMD5)
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, c chan []byte) {
 	// make a temporary bytes var to read from the connection
 	tmp := make([]byte, 1024)
 	// make 0 length data bytes (since we'll be appending)
@@ -107,8 +110,8 @@ func handleConnection(conn net.Conn) {
 
 	// log bytes read
 	fmt.Printf("READ  %d bytes\n", length)
-
-	done <- true
+    c <- data
+	//done <- true
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
