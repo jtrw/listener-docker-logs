@@ -135,15 +135,15 @@ func main() {
                 gobobj.Encode(msg)
                 length := fmt.Sprintf("%08d", len(binBuf.Bytes()))
                 fmt.Println(length)
-                //c.Write(binBuf.Bytes())
-                c.Write([]byte("Check\n"))
+                c.Write(binBuf.Bytes())
+                //c.Write([]byte("Check\n"))
             } else {
                 msg := Message{Uuid: "1", Message: "PONG"}
                 binBuf := new(bytes.Buffer)
                 gobobj := gob.NewEncoder(binBuf)
                 gobobj.Encode(msg)
-                c.Write([]byte("Ping\n"))
-                //c.Write(binBuf.Bytes())
+                //c.Write([]byte("Ping\n"))
+                c.Write(binBuf.Bytes())
             }
         }
         //time.Sleep(10 * time.Second)
