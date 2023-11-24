@@ -4,8 +4,11 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
+	"os"
 	"gopkg.in/yaml.v3"
 	"github.com/jessevdk/go-flags"
+	"os/exec"
+    "regexp"
 	"log"
 	"time"
 )
@@ -47,7 +50,7 @@ func main() {
         log.Fatal(err)
     }
 
-    listener, errYaml := LoadConfig(opts.Config)
+    listenerConfig, errYaml := LoadConfig(opts.Config)
     if errYaml != nil {
         log.Println(errYaml)
     }
@@ -73,11 +76,11 @@ func main() {
 		fmt.Println("Client connected:", conn.RemoteAddr())
 
 		// Handle client connection in a goroutine
-		go handleClientConnection(conn)
+		go handleClientConnection(conn, listenerConfig, tmpTime)
 	}
 }
 
-func handleClientConnection(conn net.Conn) {
+func handleClientConnection(conn net.Conn, listener *Listener, tmpTime string) {
 	defer conn.Close()
 
 
@@ -85,19 +88,69 @@ func handleClientConnection(conn net.Conn) {
 	encoder := gob.NewEncoder(conn)
 
 	// Example data to send
-	dataToSend := Message{
-		Uuid: "123",
-		Data: ContainerMessages{
-			Name:     "Example",
-			Messages: []string{"Message 1", "Message 2", "Message 3"},
-		},
-		Message: "Hello from server!",
-	}
+// 	dataToSend := Message{
+// 		Uuid: "123",
+// 		Data: ContainerMessages{
+// 			Name:     "Example",
+// 			Messages: []string{"Message 1", "Message 2", "Message 3"},
+// 		},
+// 		Message: "Hello from server!",
+// 	}
+    msg := Message{Uuid: "1"}
+	for _, container := range listener.Containers {
+        var containerMessages ContainerMessages;
+        containerMessages.Name = string(container.Name)
+       // cmd := exec.Command("docker", "logs", string(container.Name), "--tail", "30")
+        //time := time.Now().Add(-time.Second * 1).Format("2006-01-02T15:04:05")
+
+        cmd := exec.Command("docker", "logs", string(container.Name), "--since", tmpTime)
+        tmpTime = time.Now().Format("2006-01-02T15:04:05")
+        output, err := cmd.CombinedOutput()
+
+        if err != nil {
+            log.Fatal(err)
+        }
+        outStr := string(output)
+        if container.All {
+            containerMessages.Messages = append(containerMessages.Messages, outStr)
+        } else {
+            for _, regExpStr := range container.Regexp {
+                matched := regexp.MustCompile(regExpStr)
+                matches := matched.FindAllStringSubmatch(outStr, -1)
+                //matchesIndexes := matched.FindAllStringSubmatchIndex(outStr, -1)
+
+                for _, v := range matches {
+                    containerMessages.Messages = append(containerMessages.Messages, v[1])
+                }
+            }
+        }
+        if len(containerMessages.Messages) > 0 {
+            msg = Message{Uuid: "1", Data: containerMessages}
+        } else {
+            msg = Message{Uuid: "1", Message: "PONG"}
+        }
+    }
+
 
 	// Send data to client
-	err := encoder.Encode(dataToSend)
+	err := encoder.Encode(msg)
 	if err != nil {
 		fmt.Println("Error encoding and sending data:", err)
 		return
 	}
 }
+
+func LoadConfig(file string) (*Listener, error) {
+	fh, err := os.Open(file)
+	if err != nil {
+		return nil, fmt.Errorf("can't load config file %s: %w", file, err)
+	}
+	defer fh.Close()
+
+	res := Listener{}
+	if err := yaml.NewDecoder(fh).Decode(&res); err != nil {
+		return nil, fmt.Errorf("can't parse config: %w", err)
+	}
+	return &res, nil
+}
+
